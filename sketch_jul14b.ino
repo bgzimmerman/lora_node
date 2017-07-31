@@ -8,10 +8,9 @@
 //*********************************************************************************************
 #define BATT_MONITOR_EN A3 //enables battery voltage divider to get a reading from a battery, disable it to save power
 #define BATT_MONITOR  A7   //through 1Meg+470Kohm and 0.1uF cap from battery VCC - this ratio divides the voltage to bring it below 3.3V where it is scaled to a readable range
-#define BATT_CYCLES   1    //read and report battery voltage every this many sleep cycles (ex 30cycles * 8sec sleep = 240sec/4min). For 450 cyclesyou would get ~1 hour intervals
+#define BATT_CYCLES   1    //read and report battery voltage every this many sleep cycles (ex 30cycles * 8sec sleep = 240sec/4min. For 450 cyclesyou would get ~1 hour intervals
 #define BATT_FORMULA(reading) reading * 0.00322 * 1.475  // >>> fine tune this parameter to match your voltage when fully charged
-#define BATT_LOW      4.2  //(volts)
-#define BATT_READ_LOOPS  SEND_LOOPS*10  // read and report battery voltage every this many sleep cycles (ex 30cycles * 8sec sleep = 240sec/4min). For 450 cycles you would get ~1 hour intervals between readings
+unsigned short idlePeriod = 35; // >>> 1 idle period is equal to about 8 seconds
 //*****************************************************************************************************************************
 
 
@@ -50,19 +49,14 @@ void setup() {
 
 int i;
 unsigned long nextTransmissionTime = 0;
-unsigned short idlePeriod = 0;
-int battCycles = 1;
 int counter = 0;
 void loop() {
   if (millis() > nextTransmissionTime) {
-    Serial.print("Current send time is: ");
-    Serial.println(millis());
-    
     for (i=4; i<4 + numBusses; i++) {
       sendBusTemp(i);
     }
     sendWeatherData();
-    if (counter < battCycles) {
+    if (counter < BATT_CYCLES) {
     counter++;
     }
     else {
